@@ -1,0 +1,68 @@
+syntax = "proto3";
+import "Common/msg.proto";
+
+message RegisterReq // 注册请求
+{
+    User user = 1;
+}
+
+message RegisterRep // 注册回复
+{
+    Code code = 1;
+}
+
+message LoginReq  // 登录的请求
+{
+    User user = 2;
+}
+
+message LoginRep // 登录的回复
+{
+    Code code = 1;
+    User user = 2;
+    StatisticalInfo sInfo = 3;
+}
+
+message QueryInfoReq // 查询信息请求
+{
+    string usetype = 1;
+    int32 startTime = 2;
+    int32 endTime = 3;
+    // repeated表示可重复
+    // 表示有多个Info
+//    repeated Info infolist = 3;
+}
+
+message AddInfoReq // 新增信息请求
+{
+    Info info = 1;
+}
+
+message DelInfoReq // 删除信息的请求
+{
+    repeated int32 idlist = 1;
+}
+
+message DelInfoRep // 删除信息的回复
+{
+    Code code = 1;
+    repeated int32 idlist = 2;
+}
+
+message ChangeInfoReq // 改变信息请求
+{
+    int32 infoid = 1;
+    float changeval = 2;
+    string changeusetype = 3;
+}
+
+message ChangeInfoRep // 修改信息的回复
+{
+    Code code = 1;
+    Info info = 2;
+}
+
+message InfoList // 信息列表
+{
+    repeated Info infolist = 1;
+}
