@@ -46,6 +46,7 @@ func StartServer() (err error) {
 	fmt.Println("监听：", adree)
 	conn, err := net.ListenUDP("udp", adree)
 	checkError(err)
+	defer conn.Close()
 	for  {
 		connect(conn)
 	}

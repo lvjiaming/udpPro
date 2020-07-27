@@ -11,6 +11,6 @@ var (
 	InfoDb = "infodb"
 
 	// 服务器相关
-	SERVER_PORT     = 20000
-	SERVER_RECV_LEN = 10
+	SERVER_PORT     = 20000 //端口号
+	SERVER_RECV_LEN = 10 // 一次接受数据的最大字节数
 )

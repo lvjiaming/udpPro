@@ -37,7 +37,7 @@ declare module cc {
 	@param obj A JavaScript string containing zero or more substitution strings.
 	@param subst JavaScript objects with which to replace substitution strings within msg. This gives you additional control over the format of the output. 
 	*/
-	export function log(obj : any, subst : any) : void;	
+	export function log(obj : any, subst? : any) : void;
 	/** !#en
 	Outputs an informational message to the Cocos Creator Console (editor) or Web Console (runtime).
 	- In Cocos Creator, info is blue.
