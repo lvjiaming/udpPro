@@ -1,3 +1,5 @@
+import {Net} from "./Event/Net";
+import {CommonCfg} from "./Common/CommonCfg";
 const {ccclass, property} = cc._decorator;
 
 @ccclass
@@ -18,6 +20,9 @@ export default class Helloworld extends cc.Component {
         //     cc.PhysicsManager.DrawBits.e_shapeBit
         // ;
         // cc.log(this.player);
+        Net.getInstance().connect(CommonCfg.HALL_HOST, () => {
+            cc.log("连接上了");
+        });
     }
 
     start () {

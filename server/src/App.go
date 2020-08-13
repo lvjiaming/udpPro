@@ -15,7 +15,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 	"sync"
 	"time"
 )
@@ -29,17 +28,37 @@ func main()  {
 	wsGroup := router.Group("/ws")
 	wsGroup.GET("/:channel", ws.WebsocketManager.WsClient)
 	srv := &http.Server{
-		Addr:              ":8080",
+		Addr:              ":2020",
 		Handler:           router,
 	}
 	go func() {
+		//err := router.RunTLS(":8080", "./src/server.crt", "./src/server.key")
+		//if err != nil {
+		//	log.Fatalf("Server Start Error: %s\n", err)59.110.221.90
+		//}
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server Start Error: %s\n", err)
 		}
+
+		// 以下为ssl连接
+		//dirPath := os.Args[0]
+		//
+		//crtPath, err := filepath.Abs(dirPath + "/../../server.crt")
+		//if err != nil {
+		//	log.Fatal("server.crt path is err")
+		//}
+		//keyPath, err := filepath.Abs(dirPath + "/../../server.key")
+		//if err != nil {
+		//	log.Fatal("server.key path is err")
+		//}
+		//if err := srv.ListenAndServeTLS(crtPath, keyPath); err != nil && err != http.ErrServerClosed {
+		//	log.Fatalf("Server Start Error: %s\n", err)
+		//}
 	}()
 
 	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt)
+	xx := make(chan int)
+	//signal.Notify(quit, os.Interrupt)
 	<- quit
 	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
 	defer cancel()
@@ -47,7 +66,7 @@ func main()  {
 		log.Fatal("Server Shutdown Error:", err)
 	}
 	log.Println("Server Shutdown")
-
+	<- xx
 	return
 	// Gee框架
 	gee := Gee.New()

@@ -1,2 +1,1 @@
-protoc --js_out=import_style=commonjs,binary:../client/jzbClient/assets/Scripts/Proto ./Common/msg.proto
-protoc --js_out=import_style=commonjs,binary:../client/jzbClient/assets/Scripts/Proto ./JiZhangBo/jiZhangBo.proto
+protoc --js_out=import_style=commonjs,binary:../client/updGame/assets/Script/Proto ./Common/msg.proto
