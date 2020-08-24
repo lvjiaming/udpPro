@@ -1,8 +1,10 @@
 package ws
 
 import (
+	"../Proto/Common"
 	"fmt"
 	"github.com/gin-gonic/gin" // web框架
+	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
 	"log"
@@ -90,16 +92,16 @@ func (m *Manager) Start ()  {
 	for  {
 		select {
 		case client := <-m.Register: // 注册单个client
-			m.Lock.Lock()
+			//m.Lock.Lock()
 			if m.Group[client.Group] == nil {
 				m.Group[client.Group] = make(map[string]*Client)
 				m.groupCount++
 			}
 			m.Group[client.Group][client.Id] = client
 			m.clientCount++
-			m.Lock.Unlock()
+			//m.Lock.Unlock()
 		case client := <-m.UnRegister: // 注销单个client
-			m.Lock.Lock()
+			//m.Lock.Lock()
 			if _, ok := m.Group[client.Group]; ok {
 				if _, ok := m.Group[client.Group][client.Id]; ok {
 					close(client.Message)
@@ -111,7 +113,7 @@ func (m *Manager) Start ()  {
 					}
 				}
 			}
-			m.Lock.Unlock()
+			//m.Lock.Unlock()
 		}
 	}
 }
@@ -131,7 +133,20 @@ func (c *Client) Read ()  {
 		if err != nil || messageType == websocket.CloseMessage {
 			break
 		}
-		c.Message <- message
+		fmt.Println("数据：", message)
+
+		// 以下为测试
+		var newMsg []byte
+		msgId := message[0]
+		for index := 1; index < len(message); index++{
+			newMsg = append(newMsg, message[index])
+		}
+		code := &msg.Code{}
+		proto.Unmarshal(newMsg, code)
+		fmt.Println("msgId: ", msgId)
+		fmt.Println("msg: ", code.Msg)
+		WebsocketManager.Send(c.Group, c.Id, code, msg.Event(msgId))
+		//c.Message <- message
 	}
 }
 
@@ -151,7 +166,7 @@ func (c *Client) Write ()  {
 				_ = c.Socket.WriteMessage(websocket.CloseMessage, []byte{})
 				break
 			}
-			log.Printf("client [%s] write message: %s", c.Id, string(message))
+			//log.Printf("client [%s] write message: %s", c.Id, string(message))
 			err := c.Socket.WriteMessage(websocket.BinaryMessage, message)
 			if err != nil {
 				log.Printf("client [%s] writemessage err: %s", c.Id, err)
@@ -213,11 +228,12 @@ func (m *Manager) SendBroadService ()  {
 /**
  向指定client发送消息
  */
-func (m *Manager) Send (group string, id string, message []byte)  {
+func (m *Manager) Send (group string, id string, message proto.Message, msgId msg.Event)  {
+	sendMsg := messageChange(message, msgId)
 	data := &MessageData{
 		Id:      id,
 		Group:   group,
-		Message: message,
+		Message: sendMsg,
 	}
 	m.Message <- data
 }
@@ -225,10 +241,11 @@ func (m *Manager) Send (group string, id string, message []byte)  {
 /**
  向指定Group发送消息
  */
-func (m *Manager) SendGroup (group string, message []byte)  {
+func (m *Manager) SendGroup (group string, message proto.Message, msgId msg.Event)  {
+	sendMsg := messageChange(message, msgId)
 	data := &GroupMessageData{
 		Group:   group,
-		Message: message,
+		Message: sendMsg,
 	}
 	m.GroupMessage <- data
 }
@@ -236,9 +253,21 @@ func (m *Manager) SendGroup (group string, message []byte)  {
 /**
  广播消息
  */
-func (m *Manager) SendBroad (message []byte)  {
-	data := &BroadCastMessageData{Message:message}
-	m.BroadCastMessage <- data;
+func (m *Manager) SendBroad (message proto.Message, msgId msg.Event)  {
+	sendMsg := messageChange(message, msgId)
+	data := &BroadCastMessageData{Message:sendMsg}
+	m.BroadCastMessage <- data
+}
+
+/**
+ 协议加密成二进制
+ */
+func messageChange(msg proto.Message, msgId msg.Event) []byte {
+	msgByte, _ := proto.Marshal(msg)
+	var sendMsg []byte
+	sendMsg = append(sendMsg, byte(msgId))
+	sendMsg = append(sendMsg, msgByte...)
+	return sendMsg
 }
 
 /**

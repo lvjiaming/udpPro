@@ -15,6 +15,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"sync"
 	"time"
 )
@@ -31,6 +32,7 @@ func main()  {
 		Addr:              ":2020",
 		Handler:           router,
 	}
+	go ws.WebsocketManager.Start()
 	go func() {
 		//err := router.RunTLS(":8080", "./src/server.crt", "./src/server.key")
 		//if err != nil {
@@ -57,8 +59,7 @@ func main()  {
 	}()
 
 	quit := make(chan os.Signal)
-	xx := make(chan int)
-	//signal.Notify(quit, os.Interrupt)
+	signal.Notify(quit, os.Interrupt)
 	<- quit
 	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
 	defer cancel()
@@ -66,7 +67,6 @@ func main()  {
 		log.Fatal("Server Shutdown Error:", err)
 	}
 	log.Println("Server Shutdown")
-	<- xx
 	return
 	// Gee框架
 	gee := Gee.New()

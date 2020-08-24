@@ -1,5 +1,6 @@
 import {Net} from "./Event/Net";
 import {CommonCfg} from "./Common/CommonCfg";
+import msgPb = require('./Proto/Common/msg_pb');
 const {ccclass, property} = cc._decorator;
 
 @ccclass
@@ -22,6 +23,10 @@ export default class Helloworld extends cc.Component {
         // cc.log(this.player);
         Net.getInstance().connect(CommonCfg.HALL_HOST, () => {
             cc.log("连接上了");
+            const data = new msgPb.Code();
+            data.setCode(msgPb.CodeType.SUC);
+            data.setMsg("测试");
+            Net.getInstance().send(msgPb.Event.EVENT_MSG_INFO, data);
         });
     }
 
